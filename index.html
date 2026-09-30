@@ -48,8 +48,12 @@
         overflow: visible;
       }
 
-      .media-pending-note {
-        font-style: italic;
+      .stat-best {
+        font-weight: 700;
+      }
+
+      .stat-second {
+        text-decoration: underline;
       }
     </style>
   </head>
@@ -85,18 +89,95 @@
         <div class="columns is-centered has-text-centered">
           <div class="column is-full-width">
             <h2 class="title is-3">Overview of the RCRA Framework</h2>
-            <p style="text-align: left;">RCRA connects pedestrian reactivity estimation with continuous policy adaptation. The robot estimates how nearby pedestrians respond to its motion and uses these estimates to determine how strongly to activate a residual learned from reactive crowds.</p>
-            <div class="structure-image" style="margin-top: 1.5rem;">
+            <div class="structure-image" style="margin-top: 1rem;">
               <img src="static/images/Diagram_V3.png" alt="Overview of the RCRA framework">
             </div>
-            <p class="is-size-7 has-text-grey" style="text-align: left; margin-top: 0.5rem;">Motion history and robot context provide per-pedestrian reactivity estimates. Spatial aggregation converts these estimates into a continuous scale that modulates the learned residual around the frozen conservative backbone.</p>
             <div class="content" style="text-align: left; margin-top: 1.5rem;">
-              <h3 class="title is-4">Estimating Pedestrian Reactivity</h3>
-              <p>A Transformer processes human motion history and robot context to estimate the probability that each pedestrian responds to the robot. The estimator is trained using simulator labels and refined on observations collected by the adaptive policy. It does not require intended pedestrian goals.</p>
-              <h3 class="title is-4">Prioritizing Local Interactions</h3>
-              <p>Reactivity estimates are weighted by pedestrian distance and bearing, emphasizing nearby pedestrians ahead of the robot. This gives a nearby non-reactive pedestrian greater influence than a distant pedestrian at the same bearing. The weighted estimates determine a continuous adaptation scale.</p>
-              <h3 class="title is-4">Modulating the Navigation Policy</h3>
-              <p>A conservative policy is first trained with non-reactive pedestrians and then frozen. Low-rank residual modules are learned from reactive crowds. During navigation, the adaptation scale controls these residuals, allowing the robot to adjust its behavior as local interactions change. All learned parameters remain fixed during deployment.</p>
+              <p>The upper part of the diagram shows the offline training process. We first train a conservative navigation policy with non-reactive pedestrians and freeze its parameters. Low-rank residual modules are then trained with reactive pedestrians, and a reactivity estimator is trained and refined using observations collected by the adaptive policy.</p>
+              <p>The lower part shows online deployment. From motion history and robot context, the estimator predicts each pedestrian's reactivity. These estimates are aggregated using distance and bearing, emphasizing nearby pedestrians ahead of the robot. The resulting scale controls the residual strength in the navigation policy, allowing the robot to adjust its behavior as local interactions change without online gradient updates.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <section class="section">
+      <div class="container is-max-desktop">
+        <div class="columns is-centered has-text-centered">
+          <div class="column is-full-width">
+            <h2 class="title is-3">Reactivity Estimation and Navigation Performance</h2>
+            <p style="text-align: left;">We compare our learned reactivity estimator with the Bayesian inference component of Behavior-Driven Danger Signaling (BDDS), keeping the navigation backbone, learned residual, and spatial weighting fixed. The table reports both reactivity classification accuracy and downstream navigation performance in Mixed, Spatial Clusters, and Time-varying crowds. Averaged across these three scenarios, learned conditioning improves accuracy and reduces collision rate from 6.56% to 4.85%, while reducing path length by 3.6%. These results show how improved reactivity estimates support navigation under heterogeneous and changing interactions.</p>
+            <div class="table-container" style="margin-top: 1.25rem;">
+              <figure class="has-text-centered" id="tab-estimator-results">
+                <figcaption class="has-text-weight-semibold is-size-6" style="margin-bottom:0.5rem; text-align:left;">
+                  Reactivity estimation and downstream navigation with BDDS and our learned estimator. Navigation components are held fixed, and only the supplied reactivity estimates change. Acc.: classification accuracy; SR: success rate; CR: collision rate; NT: navigation time; PL: path length. Bold and underlined means indicate the best and second-best values within each scenario and metric. NT and PL are computed over successful episodes.
+                </figcaption>
+                <table class="table is-striped is-hoverable is-fullwidth is-narrow" style="font-size:0.9rem;">
+                  <thead>
+                    <tr>
+                      <th>Scenario</th>
+                      <th>Estimator</th>
+                      <th>Acc. (%) &uarr;</th>
+                      <th>SR (%) &uarr;</th>
+                      <th>CR (%) &darr;</th>
+                      <th>NT (s) &darr;</th>
+                      <th>PL (m) &darr;</th>
+                    </tr>
+                  </thead>
+                  <tbody class="has-text-centered">
+                    <tr>
+                      <td rowspan="2"><strong>Mixed</strong></td>
+                      <td>BDDS</td>
+                      <td class="stat-second">72.8</td>
+                      <td class="stat-second">93.60</td>
+                      <td class="stat-second">6.40</td>
+                      <td class="stat-second">14.10</td>
+                      <td class="stat-second">14.07</td>
+                    </tr>
+                    <tr>
+                      <td>Learned (Ours)</td>
+                      <td class="stat-best">84.6</td>
+                      <td class="stat-best">96.08</td>
+                      <td class="stat-best">3.92</td>
+                      <td class="stat-best">13.68</td>
+                      <td class="stat-best">13.64</td>
+                    </tr>
+                    <tr>
+                      <td rowspan="2"><strong>Spatial Clusters</strong></td>
+                      <td>BDDS</td>
+                      <td class="stat-second">72.1</td>
+                      <td class="stat-second">93.28</td>
+                      <td class="stat-second">6.72</td>
+                      <td class="stat-second">13.60</td>
+                      <td class="stat-second">13.56</td>
+                    </tr>
+                    <tr>
+                      <td>Learned (Ours)</td>
+                      <td class="stat-best">84.4</td>
+                      <td class="stat-best">94.88</td>
+                      <td class="stat-best">5.12</td>
+                      <td class="stat-best">13.01</td>
+                      <td class="stat-best">12.98</td>
+                    </tr>
+                    <tr>
+                      <td rowspan="2"><strong>Time-varying</strong></td>
+                      <td>BDDS</td>
+                      <td class="stat-second">70.8</td>
+                      <td class="stat-second">93.44</td>
+                      <td class="stat-second">6.56</td>
+                      <td class="stat-second">14.72</td>
+                      <td class="stat-second">14.66</td>
+                    </tr>
+                    <tr>
+                      <td>Learned (Ours)</td>
+                      <td class="stat-best">77.1</td>
+                      <td class="stat-best">94.48</td>
+                      <td class="stat-best">5.52</td>
+                      <td class="stat-best">14.19</td>
+                      <td class="stat-best">14.13</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </figure>
             </div>
           </div>
         </div>
@@ -111,9 +192,11 @@
 
             <h3 class="title is-4" style="text-align: left; margin-top: 2rem;">Navigation in Mixed Crowds</h3>
             <p style="text-align: left;">This comparison illustrates how different policies handle reactive and non-reactive pedestrians within the same scene. The conservative policy takes a long detour, while the naive policy follows a direct route but collides with a non-reactive pedestrian. RCRA adjusts its residual strength as local interactions change, using opportunities created by reactive pedestrians while becoming more conservative near a non-reactive pedestrian.</p>
-            <p class="media-pending-note has-text-grey" style="text-align: left;">Video footage not yet supplied &mdash; figure reproduced from the manuscript.</p>
             <figure class="has-text-centered">
-              <img src="static/images/qualitative.png" alt="Representative mixed-crowd executions comparing GenSafeNav (Cons.), GenSafeNav (Naive), and RCRA" style="max-width:100%; height:auto;">
+              <video class="is-fullwidth" autoplay muted loop playsinline controls poster="static/images/qualitative.png">
+                <source src="static/videos/simulation_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
               <figcaption class="is-size-6" style="margin-top:0.5rem; text-align:left;">
                 Representative mixed-crowd executions from the manuscript illustrate conservative, naive, and reactivity-conditioned navigation.
               </figcaption>
@@ -131,7 +214,7 @@
             <div class="table-container" style="margin-top: 1.25rem;">
               <figure class="has-text-centered" id="tab-scenario-results">
                 <figcaption class="has-text-weight-semibold is-size-6" style="margin-bottom:0.5rem; text-align:left;">
-                  <strong>GenSafeNav (Cons.) vs. RCRA (Ours) across the five interaction scenarios.</strong> Success Rate (SR), Navigation Time (NT), and Path Length (PL), mean &plusmn; std over 1,250 test episodes per scenario across five random seeds.
+                  Comparison of GenSafeNav (Cons.), GenSafeNav (Naive), and RCRA across five interaction scenarios. Results are reported as means across five random seeds, using 1,250 test episodes per scenario. Bold and underlined means indicate the best and second-best values, respectively, among the displayed methods within each scenario. Navigation time and path length are computed over successful episodes and should be interpreted alongside success rate.
                 </figcaption>
                 <table class="table is-striped is-hoverable is-fullwidth is-narrow" style="font-size:0.9rem;">
                   <thead>
@@ -145,69 +228,99 @@
                   </thead>
                   <tbody class="has-text-centered">
                     <tr>
-                      <td rowspan="2"><strong>Non-reactive</strong></td>
+                      <td rowspan="3"><strong>Non-reactive</strong></td>
                       <td>GenSafeNav (Cons.)</td>
-                      <td>97.20 &plusmn; 0.40</td>
-                      <td>16.59 &plusmn; 0.47</td>
-                      <td>16.52 &plusmn; 0.47</td>
-                    </tr>
-                    <tr class="has-background-primary-light">
-                      <td><strong>RCRA (OURS)</strong></td>
-                      <td><strong>95.52 &plusmn; 0.69</strong></td>
-                      <td><strong>15.86 &plusmn; 0.45</strong></td>
-                      <td><strong>15.80 &plusmn; 0.43</strong></td>
+                      <td class="stat-best">97.20</td>
+                      <td>16.59</td>
+                      <td>16.52</td>
                     </tr>
                     <tr>
-                      <td rowspan="2"><strong>Reactive</strong></td>
-                      <td>GenSafeNav (Cons.)</td>
-                      <td>100.00 &plusmn; 0.00</td>
-                      <td>16.24 &plusmn; 0.47</td>
-                      <td>16.19 &plusmn; 0.47</td>
+                      <td>GenSafeNav (Naive)</td>
+                      <td>59.52</td>
+                      <td class="stat-best">11.61</td>
+                      <td class="stat-best">11.58</td>
                     </tr>
                     <tr class="has-background-primary-light">
-                      <td><strong>RCRA (OURS)</strong></td>
-                      <td><strong>99.28 &plusmn; 0.33</strong></td>
-                      <td><strong>11.02 &plusmn; 0.12</strong></td>
-                      <td><strong>11.01 &plusmn; 0.12</strong></td>
+                      <td>RCRA (Ours)</td>
+                      <td class="stat-second">95.52</td>
+                      <td class="stat-second">15.86</td>
+                      <td class="stat-second">15.80</td>
                     </tr>
                     <tr>
-                      <td rowspan="2"><strong>Mixed</strong></td>
+                      <td rowspan="3"><strong>Reactive</strong></td>
                       <td>GenSafeNav (Cons.)</td>
-                      <td>98.56 &plusmn; 0.73</td>
-                      <td>16.61 &plusmn; 0.58</td>
-                      <td>16.55 &plusmn; 0.57</td>
-                    </tr>
-                    <tr class="has-background-primary-light">
-                      <td><strong>RCRA (OURS)</strong></td>
-                      <td><strong>96.08 &plusmn; 1.58</strong></td>
-                      <td><strong>13.68 &plusmn; 0.43</strong></td>
-                      <td><strong>13.64 &plusmn; 0.37</strong></td>
+                      <td class="stat-best">100.00</td>
+                      <td>16.24</td>
+                      <td>16.19</td>
                     </tr>
                     <tr>
-                      <td rowspan="2"><strong>Spatial Clusters</strong></td>
-                      <td>GenSafeNav (Cons.)</td>
-                      <td>97.12 &plusmn; 0.77</td>
-                      <td>15.47 &plusmn; 0.68</td>
-                      <td>15.40 &plusmn; 0.67</td>
+                      <td>GenSafeNav (Naive)</td>
+                      <td>99.20</td>
+                      <td class="stat-best">10.69</td>
+                      <td class="stat-best">10.66</td>
                     </tr>
                     <tr class="has-background-primary-light">
-                      <td><strong>RCRA (OURS)</strong></td>
-                      <td><strong>94.88 &plusmn; 1.00</strong></td>
-                      <td><strong>13.01 &plusmn; 0.33</strong></td>
-                      <td><strong>12.98 &plusmn; 0.36</strong></td>
+                      <td>RCRA (Ours)</td>
+                      <td class="stat-second">99.28</td>
+                      <td class="stat-second">11.02</td>
+                      <td class="stat-second">11.01</td>
                     </tr>
                     <tr>
-                      <td rowspan="2"><strong>Time-varying</strong></td>
+                      <td rowspan="3"><strong>Mixed</strong></td>
                       <td>GenSafeNav (Cons.)</td>
-                      <td>98.88 &plusmn; 0.77</td>
-                      <td>16.50 &plusmn; 0.53</td>
-                      <td>16.44 &plusmn; 0.53</td>
+                      <td class="stat-best">98.56</td>
+                      <td>16.61</td>
+                      <td>16.55</td>
+                    </tr>
+                    <tr>
+                      <td>GenSafeNav (Naive)</td>
+                      <td>82.40</td>
+                      <td class="stat-best">11.36</td>
+                      <td class="stat-best">11.34</td>
                     </tr>
                     <tr class="has-background-primary-light">
-                      <td><strong>RCRA (OURS)</strong></td>
-                      <td><strong>94.48 &plusmn; 1.63</strong></td>
-                      <td><strong>14.19 &plusmn; 0.36</strong></td>
-                      <td><strong>14.13 &plusmn; 0.39</strong></td>
+                      <td>RCRA (Ours)</td>
+                      <td class="stat-second">96.08</td>
+                      <td class="stat-second">13.68</td>
+                      <td class="stat-second">13.64</td>
+                    </tr>
+                    <tr>
+                      <td rowspan="3"><strong>Spatial Clusters</strong></td>
+                      <td>GenSafeNav (Cons.)</td>
+                      <td class="stat-best">97.12</td>
+                      <td>15.47</td>
+                      <td>15.40</td>
+                    </tr>
+                    <tr>
+                      <td>GenSafeNav (Naive)</td>
+                      <td>82.88</td>
+                      <td class="stat-best">10.83</td>
+                      <td class="stat-best">10.80</td>
+                    </tr>
+                    <tr class="has-background-primary-light">
+                      <td>RCRA (Ours)</td>
+                      <td class="stat-second">94.88</td>
+                      <td class="stat-second">13.01</td>
+                      <td class="stat-second">12.98</td>
+                    </tr>
+                    <tr>
+                      <td rowspan="3"><strong>Time-varying</strong></td>
+                      <td>GenSafeNav (Cons.)</td>
+                      <td class="stat-best">98.88</td>
+                      <td>16.50</td>
+                      <td>16.44</td>
+                    </tr>
+                    <tr>
+                      <td>GenSafeNav (Naive)</td>
+                      <td>81.84</td>
+                      <td class="stat-best">11.60</td>
+                      <td class="stat-best">11.55</td>
+                    </tr>
+                    <tr class="has-background-primary-light">
+                      <td>RCRA (Ours)</td>
+                      <td class="stat-second">94.48</td>
+                      <td class="stat-second">14.19</td>
+                      <td class="stat-second">14.13</td>
                     </tr>
                   </tbody>
                 </table>
@@ -224,9 +337,11 @@
             <h2 class="title is-3">Real-Robot Experiments</h2>
             <p style="text-align: left;">We validate residual adaptation on a Clearpath Jackal navigating through four pedestrians: two instructed to maintain their nominal motion and two instructed to respond to the robot. The experiment uses prescribed reactivity labels to isolate the adaptation mechanism.</p>
             <p style="text-align: left;">In the representative comparison, the conservative policy takes a long detour and the naive policy collides with a non-reactive pedestrian. RCRA yields near that pedestrian while using the gap created by reactive pedestrians. Across 20 trials per policy, RCRA completes all 20 runs successfully, compared with 16 for the naive policy. Relative to the conservative policy, RCRA reduces navigation time by 15.4% and path length by 26.5%.</p>
-            <p class="media-pending-note has-text-grey" style="text-align: left;">Video footage not yet supplied &mdash; figure reproduced from the manuscript.</p>
             <figure class="has-text-centered">
-              <img src="static/images/Experiment_NEWEST_v8.png" alt="Controlled real-robot comparison of GenSafeNav (Cons.), GenSafeNav (Naive), and RCRA using prescribed reactivity labels" style="max-width:100%; height:auto;">
+              <video class="is-fullwidth" autoplay muted loop playsinline controls poster="static/images/Experiment_NEWEST_v8.png">
+                <source src="static/videos/experiment_video.mp4" type="video/mp4">
+                Your browser does not support the video tag.
+              </video>
               <figcaption class="is-size-6" style="margin-top:0.5rem; text-align:left;">
                 Controlled real-robot comparison using prescribed reactivity labels. These trials validate residual modulation on hardware; the learned reactivity estimator is evaluated separately.
               </figcaption>
