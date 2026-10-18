@@ -1,7 +1,6 @@
 # RCRA
 
-This is the repository that contains source code for the RCRA (Reactivity-Conditioned Residual
-Adaptation) project page.
+This is the repository that contains source code for the [RCRA website](https://noelsadventure.github.io/rcra.github.io/).
 
 Citation details will be added once the paper's venue, authors, and links are finalized.
 

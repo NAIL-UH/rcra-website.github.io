@@ -64,6 +64,9 @@
           <div class="columns is-centered">
             <div class="column has-text-centered">
               <h1 class="title is-1 publication-title">Learning When to Adapt: Reactivity-Conditioned Residual Adaptation under Human&ndash;Robot Interaction Shift</h1>
+              <div class="is-size-5 publication-authors" style="margin-top: 1rem;">
+                <span class="author-block">Anonymous</span>
+              </div>
               <h2 class="subtitle is-4" style="margin-top: 1.5rem;">RCRA adapts robot crowd navigation to estimated pedestrian responses by modulating a learned residual around a frozen conservative policy.</h2>
             </div>
           </div>
@@ -77,7 +80,7 @@
           <div class="column is-four-fifths">
             <h2 class="title is-3">Abstract</h2>
             <div class="content has-text-justified">
-              <p>Pedestrians differ in whether they respond to a mobile robot, and these responses can change during navigation. A policy trained under a single response assumption may therefore take unnecessary detours or rely on cooperation that does not occur. We propose Reactivity-Conditioned Residual Adaptation (RCRA), which uses explicit estimates of pedestrian reactivity to adjust a pretrained navigation policy. A Transformer estimates each pedestrian's reactivity from motion history and robot context. These estimates control a learned low-rank residual around a frozen conservative backbone, enabling online adaptation without gradient updates. Across five simulated interaction scenarios, RCRA reduces average navigation time by 16.8% and path length by 16.7% relative to the conservative backbone, with mean success rates of 96.05% and 98.35%, respectively. Evaluation on recorded human trajectories and controlled robot trials further examines reactivity estimation and residual adaptation.</p>
+              <p>Pedestrians differ in whether they respond to a robot, yet many RL policies assume all are non-reactive to prioritize safety. Policies trained without conditioning on local pedestrians' reactivity may therefore be unnecessarily conservative or rely on cooperation that does not occur. We propose RCRA, an online adaptation framework that modulates a learned residual around a frozen conservative navigation policy according to estimated pedestrian reactivity. A Transformer-based estimator infers latent pedestrian reactivity from motion histories and robot context, providing a more accurate signal for navigation adaptation and improving scenario-averaged simulation accuracy by 12.62 percentage points over the Bayesian baseline, which assumes known pedestrian goals. These estimates are spatially aggregated into an adaptation scale that gates LoRA modules, enabling cooperative behavior near reactive pedestrians and conservative behavior near non-reactive pedestrians. Among baselines achieving SR above 90% in every scenario, RCRA reduces scenario-averaged path length by 16.7% relative to the conservative backbone and by 7.3% relative to randomized-training baselines. It improves mean SR by 14.88 percentage points over the reactive-trained policy.</p>
             </div>
           </div>
         </div>
@@ -104,12 +107,15 @@
       <div class="container is-max-desktop">
         <div class="columns is-centered has-text-centered">
           <div class="column is-full-width">
-            <h2 class="title is-3">Reactivity Estimation and Navigation Performance</h2>
+            <h2 class="title is-3">Results from Crowd Navigation Simulations</h2>
+            <p style="text-align: left;">Reactive pedestrians account for the robot in their collision-avoidance decisions, while non-reactive pedestrians respond only to other pedestrians. We evaluate RCRA with 20 pedestrians in a 12&nbsp;m &times; 12&nbsp;m CrowdNav environment. Five scenarios vary pedestrian responses across people, locations, and time: Non-reactive, Reactive, Mixed, Spatial Clusters, and Time-varying.</p>
+
+            <h3 class="title is-4" style="text-align: left; margin-top: 2rem;">Reactivity Estimation and Navigation Performance</h3>
             <p style="text-align: left;">We compare our learned reactivity estimator with the Bayesian inference component of Behavior-Driven Danger Signaling (BDDS), keeping the navigation backbone, learned residual, and spatial weighting fixed. The table reports both reactivity classification accuracy and downstream navigation performance in Mixed, Spatial Clusters, and Time-varying crowds. Averaged across these three scenarios, learned conditioning improves accuracy and reduces collision rate from 6.56% to 4.85%, while reducing path length by 3.6%. These results show how improved reactivity estimates support navigation under heterogeneous and changing interactions.</p>
             <div class="table-container" style="margin-top: 1.25rem;">
               <figure class="has-text-centered" id="tab-estimator-results">
                 <figcaption class="has-text-weight-semibold is-size-6" style="margin-bottom:0.5rem; text-align:left;">
-                  Reactivity estimation and downstream navigation with BDDS and our learned estimator. Navigation components are held fixed, and only the supplied reactivity estimates change. Acc.: classification accuracy; SR: success rate; CR: collision rate; NT: navigation time; PL: path length. Bold and underlined means indicate the best and second-best values within each scenario and metric. NT and PL are computed over successful episodes.
+                  <strong>Reactivity estimation and downstream navigation with BDDS and our learned estimator.</strong>
                 </figcaption>
                 <table class="table is-striped is-hoverable is-fullwidth is-narrow" style="font-size:0.9rem;">
                   <thead>
@@ -177,18 +183,9 @@
                     </tr>
                   </tbody>
                 </table>
+                <p class="is-size-7 has-text-grey" style="text-align: left;">Notes: Navigation components are held fixed, and only the supplied reactivity estimates change. Acc.: classification accuracy; SR: success rate; CR: collision rate; NT: navigation time; PL: path length. Bold and underlined means indicate the best and second-best values within each scenario and metric. NT and PL are computed over successful episodes.</p>
               </figure>
             </div>
-          </div>
-        </div>
-      </div>
-    </section>
-    <section class="section">
-      <div class="container is-max-desktop">
-        <div class="columns is-centered has-text-centered">
-          <div class="column is-full-width">
-            <h2 class="title is-3">Results from Crowd Navigation Simulations</h2>
-            <p style="text-align: left;">We evaluate RCRA with 20 pedestrians in a 12&nbsp;m &times; 12&nbsp;m CrowdNav environment. Five scenarios vary pedestrian responses across people, locations, and time: Non-reactive, Reactive, Mixed, Spatial Clusters, and Time-varying.</p>
 
             <h3 class="title is-4" style="text-align: left; margin-top: 2rem;">Navigation in Mixed Crowds</h3>
             <p style="text-align: left;">This comparison illustrates how different policies handle reactive and non-reactive pedestrians within the same scene. The conservative policy takes a long detour, while the naive policy follows a direct route but collides with a non-reactive pedestrian. RCRA adjusts its residual strength as local interactions change, using opportunities created by reactive pedestrians while becoming more conservative near a non-reactive pedestrian.</p>
@@ -202,11 +199,11 @@
               </figcaption>
             </figure>
             <div class="content" style="text-align: left; margin-top: 1rem;">
-              <ul>
+              <!-- <ul>
                 <li><strong>GenSafeNav (Cons.):</strong> Conservative detour</li>
                 <li><strong>GenSafeNav (Naive):</strong> Collision with a non-reactive pedestrian</li>
                 <li><strong>RCRA (Ours):</strong> Locally adapted avoidance</li>
-              </ul>
+              </ul> -->
             </div>
 
             <h3 class="title is-4" style="text-align: left; margin-top: 2rem;">Performance Across Interaction Scenarios</h3>
@@ -214,7 +211,7 @@
             <div class="table-container" style="margin-top: 1.25rem;">
               <figure class="has-text-centered" id="tab-scenario-results">
                 <figcaption class="has-text-weight-semibold is-size-6" style="margin-bottom:0.5rem; text-align:left;">
-                  Comparison of GenSafeNav (Cons.), GenSafeNav (Naive), and RCRA across five interaction scenarios. Results are reported as means across five random seeds, using 1,250 test episodes per scenario. Bold and underlined means indicate the best and second-best values, respectively, among the displayed methods within each scenario. Navigation time and path length are computed over successful episodes and should be interpreted alongside success rate.
+                  <strong>Comparison of GenSafeNav (Cons.), GenSafeNav (Naive), and RCRA across five interaction scenarios.</strong>
                 </figcaption>
                 <table class="table is-striped is-hoverable is-fullwidth is-narrow" style="font-size:0.9rem;">
                   <thead>
@@ -324,6 +321,7 @@
                     </tr>
                   </tbody>
                 </table>
+                <p class="is-size-7 has-text-grey" style="text-align: left;">Notes: Results are reported as means across five random seeds, using 1,250 test episodes per scenario. Bold and underlined means indicate the best and second-best values, respectively, among the displayed methods within each scenario. Navigation time and path length are computed over successful episodes and should be interpreted alongside success rate.</p>
               </figure>
             </div>
           </div>
@@ -336,7 +334,7 @@
           <div class="column is-full-width">
             <h2 class="title is-3">Real-Robot Experiments</h2>
             <p style="text-align: left;">We validate residual adaptation on a Clearpath Jackal navigating through four pedestrians: two instructed to maintain their nominal motion and two instructed to respond to the robot. The experiment uses prescribed reactivity labels to isolate the adaptation mechanism.</p>
-            <p style="text-align: left;">In the representative comparison, the conservative policy takes a long detour and the naive policy collides with a non-reactive pedestrian. RCRA yields near that pedestrian while using the gap created by reactive pedestrians. Across 20 trials per policy, RCRA completes all 20 runs successfully, compared with 16 for the naive policy. Relative to the conservative policy, RCRA reduces navigation time by 15.4% and path length by 26.5%.</p>
+            <p style="text-align: left;">In the representative comparison, the conservative policy takes a long detour and the naive policy collides with a non-reactive pedestrian. RCRA yields near that pedestrian while using the gap created by reactive pedestrians. Across 30 virtual-pedestrian trials per policy, RCRA achieves 30 successful runs versus 23 for GenSafeNav (Naive), reducing NT by 16.2% and PL by 26.3% relative to GenSafeNav (Cons.). These experiments validate adaptation using prescribed reactivity labels.</p>
             <figure class="has-text-centered">
               <video class="is-fullwidth" autoplay muted loop playsinline controls poster="static/images/Experiment_NEWEST_v8.png">
                 <source src="static/videos/experiment_video.mp4" type="video/mp4">
@@ -347,11 +345,11 @@
               </figcaption>
             </figure>
             <div class="content" style="text-align: left; margin-top: 1rem;">
-              <ul>
+              <!-- <ul>
                 <li>GenSafeNav (Cons.)</li>
                 <li>GenSafeNav (Naive)</li>
                 <li>RCRA (Ours)</li>
-              </ul>
+              </ul> -->
             </div>
           </div>
         </div>
